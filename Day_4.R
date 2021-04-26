@@ -1,68 +1,127 @@
 #Emma Buckley
-#21 April 2021
-#Correlations
-#Day 3
+#Day 4
+#22 April 2021
+#Confidence intervals
 
-install.packages("ggpubr")
-install.packages("corrplot")
-
-# Load libraries #activate the packages
-
+#installing packages and loading libraries:
+install.packages("rcompanion")
+library(rcompanion)
+library(ggplot2)
 library(tidyverse)
-library(ggpubr)
-library(corrplot)
 
-# Load data
+#Inputting data:
 
-ecklonia <- read_csv("~/Biostatistics/Second part of R/Biostats-2021/data/ecklonia.csv")
+Input <- ("
+Student  Sex     Teacher  Steps  Rating
+a        female  Jacob    8000   7
+b        female  Jacob    9000  10
+c        female  Jacob   10000   9
+d        female  Jacob    7000   5
+e        female  Jacob    6000   4
+f        female  Jacob    8000   8
+g        male    Jacob    7000   6
+h        male    Jacob    5000   5
+i        male    Jacob    9000  10
+j        male    Jacob    7000   8
+k        female  Sadam    8000   7
+l        female  Sadam    9000   8
+m        female  Sadam    9000   8
+n        female  Sadam    8000   9
+o        male    Sadam    6000   5
+p        male    Sadam    8000   9
+q        male    Sadam    7000   6
+r        female  Donald   10000  10
+s        female  Donald    9000  10
+t        female  Donald    8000   8
+u        female  Donald    8000   7
+v        female  Donald    6000   7
+w        male    Donald    6000   8
+x        male    Donald    8000  10
+y        male    Donald    7000   7
+z        male    Donald    7000   7
+")
 
-#Removing categorical variables 
-#create a subsetted version of our data by removing all of the categorical variables
+#Creating dataframe:
 
-ecklonia_sub <- ecklonia %>% 
-  select(-species, - site, - ID)
+data <- read.table(textConnection(Input),header = TRUE)
 
-# Perform correlation analysis on two specific variables
-# Note that we do not need the final two arguments in this function to be stated
-# as they are the default settings.
-# They are only shown here to illustrate that they exist.
-#comparing two variables
+#Getting a summary of the data:
 
-cor.test(x = ecklonia$stipe_length, ecklonia$frond_length, #specifying a column
-         use = "everything", method = "pearson")
+summary(data)
 
-#Now we want to compare many variables
-ecklonia_pearson <- cor(ecklonia_sub)
-ecklonia_pearson
+#Getting structure of the data:
 
-#Kendall rank correlation
-ecklonia_norm <- ecklonia_sub %>% 
-  gather(key = "variable") %>% 
-  group_by(variable) %>% 
-  summarise(variable_norm = as.numeric(shapiro.test(value)[2]))
-ecklonia_norm
+str(data)
 
-cor.test(ecklonia$primary_blade_length, ecklonia$primary_blade_width, method = "kendall")
+# ungrouped data is indicated with a 1 on the right side of the formula, 
+#or the group = NULL argument.
+#Calculating mean, confidence level for all data:
+
+groupwiseMean(Steps ~ 1,data = data, conf = 0.95, digits = 3)
 
 
-#One panel visual
+# one-way data:
+##Calculating mean, confidence level for male and female:
 
-# Calculate Pearson r beforehand for plotting
-#creating label of the r value
-r_print <- paste0("r = ", 
-                  round(cor(x = ecklonia$stipe_length, ecklonia$frond_length),2))
+groupwiseMean(Steps ~ Sex, data = data, conf = 0.95,digits = 3)
 
-# Then create a single panel showing one correlation
-ggplot(data = ecklonia, aes(x = stipe_length, y = frond_length)) +
-  geom_smooth(method = "lm", colour = "grey90", se = F) +
-  geom_point(colour = "mediumorchid4") +
-  geom_label(x = 300, y = 240, label = r_print) +
-  labs(x = "Stipe length (cm)", y = "Frond length (cm)") +
-  theme_pubclean()
+#Plotting a graph:
 
-#creates a correlation plot
+#one way data: Just looking at sex 
+#Seeing if sex has effect on the number of steps:
 
-corrplot(ecklonia_pearson, method = "circle")
+out <- groupwiseMean(Steps ~ Sex, data = data, conf = 0.95,digits = 3)
 
-#If the colour is dark = strong correlation
-#if the colour is lighter = weak correlation
+ggplot(data = out) +
+  geom_col(aes(x = Sex, y = Mean, fill = Sex), col = "black") +
+  geom_errorbar(aes(ymin = Trad.lower,
+                    ymax = Trad.upper,
+                    x = Sex),
+                col = "black",
+                width = 0.2) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(y = "Steps",
+       title = "The number of steps for males and female students")
+
+#two way data: Looking at sex and teacher
+
+groupwiseMean(Steps ~ Teacher + Sex, data = data, conf = 0.95,digits = 3)
+
+out_2 <-groupwiseMean(Steps ~ Teacher + Sex, data = data, conf = 0.95,digits = 3)
+
+ggplot(data = out_2) +
+  geom_col(aes(x = Sex, y = Mean, fill = Sex), col = "black") +
+  geom_errorbar(aes(ymin = Trad.lower,
+                    ymax = Trad.upper,
+                    x = Sex),
+                col = "black",
+                width = 0.2) +
+  facet_wrap(~Teacher, ncol = 3) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(y = "Steps",
+       title = "Number of steps of students with different teacher")
+#Neither gender or teacher has effect on steps
+
+
+#Use bootstrapping:
+
+groupwiseMean(Steps ~ Sex,
+              data = data,
+              conf = 0.95,
+              digits = 3,
+              R = 10000,
+              boot = TRUE,
+              traditional = FALSE,
+              normal = FALSE,
+              basic = FALSE,
+              percentile = FALSE,
+              bca = TRUE)
+#ANOVA test
+
+anova <- aov(Steps~Sex*Teacher, data = data)
+summary(anova)
+
+#Tukey to look pairwise comparisons
+
+anova_Tukey <- TukeyHSD(anova)
+plot(anova_Tukey) #plotting the anova test results
