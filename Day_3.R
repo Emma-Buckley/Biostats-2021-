@@ -26,16 +26,16 @@ eruption.lm <- lm(eruptions ~ waiting, data = faithful)
 
 summary(eruption.lm)
 
-#Creating a value for the slope of the data: 
+#Using a value for the slope of the data: 
 
 slope <- round(eruption.lm$coef[2], 3) #rounding off to three decimal places
 
-# p.val <- round(coefficients(summary(eruption.lm))[2, 4], 3) # it approx. 0.
-#Creating a p value for the data:
+#p.val <- round(coefficients(summary(eruption.lm))[2, 4], 3) # it approx. 0
+#Using the p value for the data:
 
 p.val = 0.001
 
-#Creating the value for the co-efficient of determination value:
+#Using the value for the co-efficient of determination value:
 
 r2 <- round(summary(eruption.lm)$r.squared, 3)
 
