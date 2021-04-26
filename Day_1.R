@@ -4,9 +4,12 @@
 #Viewing data and Basic Stats
 #19 April 2021
 
-#Part 1:
-
+#Loading the necessary libraries:
 library(tidyverse)
+
+#Part 1: Viewing the data:
+
+
 ?BOD #to see info about the data
 BOD #view the data
 str(BOD) #to see the structure of the data and the types of data
@@ -46,27 +49,29 @@ str(volcano) #to see the structure of the data and the types of data
 View(volcano) #view the data in a separate tab
 
 
-#Load built-in data
+#Load built-in data:
+
 pines <- Loblolly
 str(pines) #structure of the data
 class(pines$height)#what type of class a particular column is
 
-#Part 2:
+# Part 2: Basic Stats -----------------------------------------------------
+
 
 #calculate sample size
 
-library(tidyverse)
 chicks <- as_tibble(ChickWeight)
 chicks #Viewing the chickweight data
 nrow(chicks) #calculate the number of rows
 ?ChickWeight #Tells us what the data is about
 unique(chicks$Chick) #tells you the sample size of the chickweight data
 
-#note the distinction between 'nrows' and the 'true' sample size
+#note the distinction between 'nrows' and the 'true' sample size:
+
 nrow(chicks)
 unique(chicks$Chick)#counts no. of unique levels
 
-#calculate the mean weight of all chickens at day 20
+#calculate the mean weight of all chickens at day 20:
 
 view(chicks)
 chicks %>% 
@@ -90,7 +95,7 @@ chicks %>%
   summarise(chicks = mean(weight),
             chicks_sd = sd(weight))
 
-#mean, median, std per diet
+#mean, median, std per diet:
 
 chicks %>% 
   filter(Time == 20) %>% 
@@ -99,21 +104,26 @@ chicks %>%
             chicks_sd = sd(weight),
             chicks_median = median(weight))
 
-#Kurtosis
+#Kurtosis:
+
+#Loading and installing necessary libraries:
+
 install.packages("e1071")
 library(e1071)
 
-#Kutosis for each diet at time 20
+#Kutosis for each diet at time 20:
 chicks %>% 
   group_by(Diet) %>%
   filter(Time == 20) %>% 
   summarise(kurtosis = kurtosis(weight))
 
-#The mean of the weight of the chicks
+#The mean of the weight of the chicks:
+
 chicks %>% 
   summarise(mean_wt = mean(weight))            
 
-#The quartiles of the chick for each diet at time 20
+#The quartiles of the chick for each diet at time 20:
+
 chicks %>% 
   group_by(Diet) %>%
   filter(Time == 20) %>% 
@@ -123,7 +133,8 @@ chicks %>%
             qrt3_wt = quantile(weight, p = 0.75),
             max_wt = max(weight))
 
-#range of the chicks
+#range of the chicks:
+
 chicks %>% 
   summarise(lower_wt = range(weight)[1],
             upper_wt = range(weight)[2])
@@ -143,6 +154,7 @@ mean(dat1) #give a NA value
 mean(dat1, na.rm = TRUE)#to remove the missing value
 
 #Plots:
+
 library(ggpubr) # needed for arranging multi-panel plots
 
 grp_stat <- chicks %>%
