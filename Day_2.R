@@ -223,6 +223,8 @@ summary(chicks.aov2)
 
 summary(aov(weight ~ Diet + as.factor(Time), data = filter(chicks, Time %in% c(0, 21))))
 
+#Run a Tukey HSD test:
+
 TukeyHSD(aov(weight ~ Diet * as.factor(Time), data = filter(chicks, Time %in% c(20, 21))))
 
 
